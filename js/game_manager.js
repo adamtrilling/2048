@@ -1,9 +1,11 @@
-function GameManager(size, InputManager, Actuator, StorageManager) {
+function GameManager(size, InputManager, Actuator, StorageManager, AI) {
   this.size           = size; // Size of the grid
   this.inputManager   = new InputManager;
   this.storageManager = new StorageManager;
   this.actuator       = new Actuator;
+  this.ai             = new AI;
 
+  this.timeout_ai     = null;
   this.startTiles     = 2;
 
   this.inputManager.on("move", this.move.bind(this));
@@ -56,6 +58,9 @@ GameManager.prototype.setup = function () {
 
   // Update the actuator
   this.actuate();
+
+  // Start the AI
+  this.startAI();
 };
 
 // Set up the initial tiles to start the game with
@@ -97,6 +102,22 @@ GameManager.prototype.actuate = function () {
   });
 
 };
+
+// Creates a timer that will cause the AI to make a single move.
+GameManager.prototype.startAI = function () {
+  var self = this;
+  if (this.isGameTerminated()) return; // Don't do anything if the game's over
+  if(this.timeout_ai != null) {
+    clearTimeout(this.timeout_ai)
+    this.timeout_ai = null;
+  }
+  var manager = this;
+  this.timeout_ai = setTimeout(function(){
+    self.timeout_ai = null;
+    self.move(manager.ai.move(self.grid.cells));
+    self.startAI();
+  }, 250);
+}
 
 // Represent the current game as an object
 GameManager.prototype.serialize = function () {
@@ -167,7 +188,7 @@ GameManager.prototype.move = function (direction) {
           self.score += merged.value;
 
           // The mighty 2048 tile
-          if (merged.value === 2048) self.won = true;
+          // if (merged.value === 2048) self.won = true;
         } else {
           self.moveTile(tile, positions.farthest);
         }
