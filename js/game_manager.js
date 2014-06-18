@@ -6,6 +6,7 @@ function GameManager(size, InputManager, Actuator, StorageManager, AI) {
   this.ai             = new AI;
 
   this.timeout_ai     = null;
+  this.moveDelay      = 0;
   this.startTiles     = 2;
 
   this.inputManager.on("move", this.move.bind(this));
@@ -106,7 +107,19 @@ GameManager.prototype.actuate = function () {
 // Creates a timer that will cause the AI to make a single move.
 GameManager.prototype.startAI = function () {
   var self = this;
-  if (this.isGameTerminated()) return; // Don't do anything if the game's over
+
+  if (this.isGameTerminated()) {
+    this.ai.gameCount += 1;
+    this.ai.recordGameResults(this);
+
+    if (this.ai.gameCount < this.ai.gamesPerCycle) {
+      this.restart();
+    }
+    else {
+      this.ai.recordCycleResults(this);
+      return;
+    }
+  }
   if(this.timeout_ai != null) {
     clearTimeout(this.timeout_ai)
     this.timeout_ai = null;
@@ -116,7 +129,7 @@ GameManager.prototype.startAI = function () {
     self.timeout_ai = null;
     self.move(manager.ai.move(self.grid.cells));
     self.startAI();
-  }, 250);
+  }, this.moveDelay);
 }
 
 // Represent the current game as an object
