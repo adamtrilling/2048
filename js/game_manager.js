@@ -3,7 +3,7 @@ function GameManager(size, InputManager, Actuator, StorageManager, AI) {
   this.inputManager   = new InputManager;
   this.storageManager = new StorageManager;
   this.actuator       = new Actuator;
-  this.ai             = new AI;
+  this.ai             = new AI(size);
 
   this.timeout_ai     = null;
   this.moveDelay      = 0;
@@ -127,7 +127,14 @@ GameManager.prototype.startAI = function () {
   var manager = this;
   this.timeout_ai = setTimeout(function(){
     self.timeout_ai = null;
-    self.move(manager.ai.move(self.grid.cells));
+
+    // try moves in order until one causes action
+    var moveIndex = 0,
+        potentialMoves = manager.ai.getMoves(self.grid.cells);
+    while (!self.move(potentialMoves[moveIndex])) {
+      moveIndex++;
+    }
+
     self.startAI();
   }, this.moveDelay);
 }
@@ -222,6 +229,8 @@ GameManager.prototype.move = function (direction) {
 
     this.actuate();
   }
+
+  return moved;
 };
 
 // Get the vector representing the chosen direction
