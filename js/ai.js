@@ -1,13 +1,14 @@
 function AI(size) {
-  this.gamesPerCycle = 1;
+  this.gamesPerCycle = 5;
   this.gameCount = 0;
 
   this.boardSize     = size;
   this.cycleScores   = [];
-  this.nn            = new NN(this.getWeights());
+  this.population    = new Population(10, []);
+  this.nn            = new NN(this.randomWeights());
 };
 
-AI.prototype.getWeights = function() {
+AI.prototype.randomWeights = function() {
   var hidden = [],
       output = [];
 
@@ -28,6 +29,10 @@ AI.prototype.getWeights = function() {
   }
 
   return [hidden, output];
+}
+
+AI.prototype.resetWeights = function() {
+  this.nn = new NN(this.randomWeights());
 }
 
 AI.prototype.cellsToInputs = function(cells) {
@@ -74,5 +79,9 @@ AI.prototype.recordCycleResults = function() {
   $.each(this.cycleScores, function(i, s) {
     sum += parseInt(s);
   });
-  console.log("average: " + sum / this.cycleScores.length);
+  var avg = sum / this.cycleScores.length
+
+  console.log("weight length: " + this.nn.serializeWeights().length);
+  this.population.push(new Phenotype(this.nn.serializeWeights(), sum / this.cycleScores.length));
+  console.log(this.population);
 }

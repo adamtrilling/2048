@@ -117,6 +117,9 @@ GameManager.prototype.startAI = function () {
     }
     else {
       this.ai.recordCycleResults(this);
+      this.ai.resetWeights();
+      this.ai.gameCount = 0;
+      this.restart();
       return;
     }
   }
