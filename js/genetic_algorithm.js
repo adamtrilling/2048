@@ -5,6 +5,10 @@ function Population(size, members) {
   } else {
     this.members = members;
   }
+
+  while (this.members.length < pop_size) {
+    this.members.push(new Phenotype());
+  }
 }
 
 Population.prototype.sort = function() {
@@ -23,6 +27,19 @@ Population.prototype.push = function(new_member) {
 }
 
 function Phenotype(weights, score) {
-  this.weights = weights;
-  this.score = score;
+  if (weights) {
+    this.weights = weights;
+  } else {
+    this.weights = this.generateRandomWeights();
+  }
+  if (score) {
+    this.score = score;
+  }
+}
+
+Phenotype.prototype.generateRandomWeights = function() {
+  length = 120;
+  while (length--) {
+    this.weights += String.fromCharCode(Math.floor(Math.random() * 255));
+  }
 }

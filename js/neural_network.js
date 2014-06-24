@@ -1,7 +1,42 @@
-function NN(weights) {
+function NN(board_size) {
+  this.board_size = board_size;
   this.inputs = [];
-  this.hidden = new Layer(weights[0]);
-  this.outputs = new Layer(weights[1]);
+  this.hidden = new Layer;
+  this.outputs = new Layer;
+}
+
+NN.prototype.cellsToInputs = function(cells) {
+  var inputs = []
+  for(var x = 0; x < this.boardSize; x++) {
+    for(var y = 0; y < this.boardSize; y++) {
+      if (cells[x][y] === null) {
+        inputs.push(0);
+      }
+      else {
+        inputs.push(Math.log(cells[x][y].value) / Math.log(2));
+      }
+    }
+  }
+  return inputs;
+}
+
+NN.prototype.getMove = function(cells) {
+  var moves = this.getOutputs(this.cellsToInputs(cells)),
+      moveTuples = [];
+
+  // sort the moves by output value
+  for(var i = 0; i < 4; i++) {
+    moveTuples.push([[i], moves[i]])
+  }
+
+  return $.map(moveTuples.sort(function(a, b) {
+    a = a[1];
+    b = b[1];
+
+    return a > b ? -1 : (a < b ? 1 : 0);
+  }), function(tuple) {
+    return tuple[0];
+  });
 }
 
 NN.prototype.getOutputs = function(input_vals) {
@@ -21,6 +56,11 @@ NN.prototype.getOutputs = function(input_vals) {
 
 NN.prototype.serializeWeights = function() {
   return this.hidden.serializeWeights() + this.outputs.serializeWeights();
+}
+
+NN.prototype.setWeights = function(weights) {
+  // weight length = (board_size^2 * hidden_size) + (hidden_size * 4)
+
 }
 
 function Layer(weights) {

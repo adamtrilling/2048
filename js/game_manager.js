@@ -3,8 +3,9 @@ function GameManager(size, InputManager, Actuator, StorageManager, AI) {
   this.inputManager   = new InputManager;
   this.storageManager = new StorageManager;
   this.actuator       = new Actuator;
-  this.ai             = new AI(size);
+  this.population     = new Population;
 
+  this.gamesPerCycle  = 10;
   this.timeout_ai     = null;
   this.moveDelay      = 0;
   this.startTiles     = 2;
@@ -106,20 +107,28 @@ GameManager.prototype.actuate = function () {
 
 // Creates a timer that will cause the AI to make a single move.
 GameManager.prototype.startAI = function () {
-  var self = this;
+  var self = this,
+      cycleScores = [];
 
   if (this.isGameTerminated()) {
-    this.ai.gameCount += 1;
-    this.ai.recordGameResults(this);
 
-    if (this.ai.gameCount < this.ai.gamesPerCycle) {
-      this.restart();
-    }
-    else {
-      this.ai.recordCycleResults(this);
-      this.ai.resetWeights();
-      this.ai.gameCount = 0;
-      this.restart();
+    cycleScores.push(this.score);
+    console.log("score: " + this.score);
+    this.restart();
+
+    if (this.cycleScores.length >= this.gamesPerCycle) {
+      // compute the average score for the cycle and assign
+      // it as the score for the weights
+      var sum = 0;
+      $.each(this.cycleScores, function(i, s) {
+        sum += parseInt(s);
+      });
+      var avg = sum / this.cycleScores.length
+
+      this.population.push(new Phenotype(this.nn.serializeWeights(), sum / this.cycleScores.length));
+      console.log(this.population);
+
+      this.cycleScores = [];
       return;
     }
   }
