@@ -80,7 +80,7 @@ function Phenotype(weights, score) {
 }
 
 Phenotype.prototype.generateRandomWeights = function() {
-  length = 120;
+  length = 240;
   this.weights = "";
   while (length--) {
     this.weights += String.fromCharCode(Math.floor(Math.random() * 255));
