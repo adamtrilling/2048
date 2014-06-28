@@ -31,8 +31,15 @@ Population.prototype.push = function(new_member) {
 Population.prototype.getMember = function() {
   var weights = "";
 
-  // mate
+  // search for a member one with no score
   this.sort();
+  for (i in this.members) {
+    if (this.members[i].score == 0) {
+      return this.members[i];
+    }
+  }
+
+  // mate
   var parent1 = Math.floor(Math.random() * (this.members.length - 2)),
       parent2 = Math.floor(Math.random() * (this.members.length - 2)),
       new_vals = [];
@@ -48,12 +55,7 @@ Population.prototype.getMember = function() {
     this.members[i].mutate(0.5);
   }
 
-  // search for a member one with no score
-  for (i in this.members) {
-    if (this.members[i].score == 0) {
-      return this.members[i];
-    }
-  }
+  return this.members[this.members.length - 1];
 }
 
 Population.prototype.to_s = function() {
