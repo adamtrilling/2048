@@ -1,8 +1,11 @@
-function NN(board_size) {
-  this.board_size = board_size;
+function NN(board_size, phenotype) {
+  this.boardSize = board_size;
+
+  var num_hidden = phenotype.weights.length / (Math.pow(board_size, 2) + 4)
+
   this.inputs = [];
-  this.hidden = new Layer;
-  this.outputs = new Layer;
+  this.hidden = new Layer(num_hidden, phenotype.weights.substr(0, Math.pow(board_size, 2) * num_hidden));
+  this.outputs = new Layer(4, phenotype.weights.substr(num_hidden * -4));
 }
 
 NN.prototype.cellsToInputs = function(cells) {
@@ -43,11 +46,11 @@ NN.prototype.getOutputs = function(input_vals) {
   var hidden_vals = [],
       output_vals = [];
 
-  for(var i = 0; i < this.hidden.length; i++) {
+  for(var i = 0; i < this.hidden.neurons.length; i++) {
     hidden_vals.push(this.hidden.neurons[i].output(input_vals));
   }
 
-  for(var i = 0; i < this.outputs.length; i++) {
+  for(var i = 0; i < this.outputs.neurons.length; i++) {
     output_vals.push(this.outputs.neurons[i].output(hidden_vals));
   }
 
@@ -58,16 +61,12 @@ NN.prototype.serializeWeights = function() {
   return this.hidden.serializeWeights() + this.outputs.serializeWeights();
 }
 
-NN.prototype.setWeights = function(weights) {
-  // weight length = (board_size^2 * hidden_size) + (hidden_size * 4)
-
-}
-
-function Layer(weights) {
+function Layer(num_neurons, weights) {
   this.neurons = [];
+  var inputs_per_neuron = weights.length / num_neurons;
 
-  for(var i = 0; i < weights[0].length; i++) {
-    this.neurons.push(new Neuron(weights[i]));
+  for(var i = 0; i < num_neurons; i++) {
+    this.neurons.push(new Neuron(weights.substr(inputs_per_neuron * i, inputs_per_neuron)));
   }
 }
 
@@ -78,7 +77,10 @@ Layer.prototype.serializeWeights = function() {
 }
 
 function Neuron(weights) {
-  this.weights = weights;
+  this.weights = []
+  for(var i = 0; i < weights.length; i++) {
+    this.weights.push(weights.charCodeAt(i));
+  }
 }
 
 Neuron.prototype.output = function(inputs) {

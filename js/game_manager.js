@@ -1,9 +1,12 @@
-function GameManager(size, InputManager, Actuator, StorageManager, AI) {
+function GameManager(size, InputManager, Actuator, StorageManager) {
   this.size           = size; // Size of the grid
   this.inputManager   = new InputManager;
   this.storageManager = new StorageManager;
   this.actuator       = new Actuator;
-  this.population     = new Population;
+  this.population     = new Population(12);
+  this.currentWeights = this.population.getMember();
+  this.nn             = new NN(size, this.currentWeights);
+  this.cycleScores    = [];
 
   this.gamesPerCycle  = 10;
   this.timeout_ai     = null;
@@ -107,13 +110,12 @@ GameManager.prototype.actuate = function () {
 
 // Creates a timer that will cause the AI to make a single move.
 GameManager.prototype.startAI = function () {
-  var self = this,
-      cycleScores = [];
+  var self = this;
 
   if (this.isGameTerminated()) {
 
-    cycleScores.push(this.score);
-    console.log("score: " + this.score);
+    this.cycleScores.push(this.score);
+    console.log("score: " + this.score + " games: " + this.cycleScores.length);
     this.restart();
 
     if (this.cycleScores.length >= this.gamesPerCycle) {
@@ -125,10 +127,14 @@ GameManager.prototype.startAI = function () {
       });
       var avg = sum / this.cycleScores.length
 
-      this.population.push(new Phenotype(this.nn.serializeWeights(), sum / this.cycleScores.length));
-      console.log(this.population);
-
+      this.currentWeights.score = sum / this.cycleScores.length;
       this.cycleScores = [];
+
+      // apply the next set of weights to the neural net
+      this.currentWeights = this.population.getMember();
+      this.nn             = new NN(this.size, this.currentWeights);
+
+      console.log(this.population.to_s());
       return;
     }
   }
@@ -136,13 +142,12 @@ GameManager.prototype.startAI = function () {
     clearTimeout(this.timeout_ai)
     this.timeout_ai = null;
   }
-  var manager = this;
   this.timeout_ai = setTimeout(function(){
     self.timeout_ai = null;
 
     // try moves in order until one causes action
     var moveIndex = 0,
-        potentialMoves = manager.ai.getMoves(self.grid.cells);
+        potentialMoves = self.nn.getMove(self.grid.cells);
     while (!self.move(potentialMoves[moveIndex])) {
       moveIndex++;
     }
