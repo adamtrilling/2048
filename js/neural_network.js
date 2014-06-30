@@ -86,9 +86,9 @@ function Neuron(weights) {
 Neuron.prototype.output = function(inputs) {
   var sum = 0;
   for(var i = 0; i < inputs.length; i++) {
-    sum += (inputs[i] * this.weights[i]);
+    sum += (inputs[i] * ((this.weights[i] - 128) / 255));
   }
-  return sum;
+  return activation(sum);
 }
 
 Neuron.prototype.setWeights = function(weights) {
@@ -97,4 +97,9 @@ Neuron.prototype.setWeights = function(weights) {
 
 Neuron.prototype.serializeWeights = function() {
   return String.fromCharCode.apply(String, this.weights)
+}
+
+function activation(input) {
+  // sigmoid
+  return -0.5 + (1 / (1 + Math.pow(Math.E, input * -1)));
 }
