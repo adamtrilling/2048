@@ -3,7 +3,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.inputManager   = new InputManager;
   this.storageManager = new StorageManager;
   this.actuator       = new Actuator;
-  this.population     = new Population(12);
+  this.population     = new Population(48);
   this.currentWeights = this.population.getMember();
   this.nn             = new NN(size, this.currentWeights);
   this.cycleScores    = [];
@@ -146,10 +146,16 @@ GameManager.prototype.startAI = function () {
     self.timeout_ai = null;
 
     // try moves in order until one causes action
-    var moveIndex = 0,
-        potentialMoves = self.nn.getMove(self.grid.cells);
-    while (!self.move(potentialMoves[moveIndex])) {
-      moveIndex++;
+    // var moveIndex = 0,
+    //     potentialMoves = self.nn.getMove(self.grid.cells);
+    // while (!self.move(potentialMoves[moveIndex])) {
+    //   moveIndex++;
+    // }
+
+    // end the game if a useless move is made
+    var move = self.nn.getMove(self.grid.cells);
+    if (!$.isNumeric(move) || !self.move(move)) {
+      self.over = true;
     }
 
     self.startAI();
