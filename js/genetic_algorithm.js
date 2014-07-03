@@ -50,7 +50,7 @@ Population.prototype.getMember = function() {
   new_vals = this.members[parent1].mate(this.members[parent2]);
   this.members.splice(this.members.length - 2, 2, new_vals[0], new_vals[1]);
 
-  // mutate
+  // mutate, except the first one
   for (var i = 1; i < this.members.length; i++) {
     this.members[i].mutate(0.75);
   }

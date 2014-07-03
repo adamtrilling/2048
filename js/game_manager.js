@@ -134,7 +134,7 @@ GameManager.prototype.startAI = function () {
       this.demerits = 0;
 
       // randomize any weights that score really low
-      if (this.currentWeights.score < (this.population.topScore() / 3)) {
+      if (this.currentWeights.score < (this.population.topScore() / 4)) {
         console.log("low score " + this.currentWeights.score);
         this.currentWeights.score = 0;
         this.currentWeights.generateRandomWeights();
