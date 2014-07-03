@@ -3,7 +3,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.inputManager   = new InputManager;
   this.storageManager = new StorageManager;
   this.actuator       = new Actuator;
-  this.population     = new Population(30);
+  this.population     = new Population(30, [new Phenotype(this.storageManager.getBestWeights(), 0)]);
   this.currentWeights = this.population.getMember();
   this.nn             = new NN(size, this.currentWeights);
 
@@ -138,6 +138,10 @@ GameManager.prototype.startAI = function () {
         console.log("low score " + this.currentWeights.score);
         this.currentWeights.score = 0;
         this.currentWeights.generateRandomWeights();
+      }
+      else if (this.currentWeights.score >= this.population.topScore()) {
+        console.log("high score " + this.currentWeights.score);
+        this.storageManager.setBestWeights(this.currentWeights.weights);
       }
 
       // apply the next set of weights to the neural net
