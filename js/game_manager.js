@@ -3,10 +3,12 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.inputManager   = new InputManager;
   this.storageManager = new StorageManager;
   this.actuator       = new Actuator;
-  this.population     = new Population(48);
+  this.population     = new Population(30);
   this.currentWeights = this.population.getMember();
   this.nn             = new NN(size, this.currentWeights);
+
   this.cycleScores    = [];
+  this.demerits       = 0;
 
   this.gamesPerCycle  = 10;
   this.timeout_ai     = null;
@@ -127,8 +129,16 @@ GameManager.prototype.startAI = function () {
       });
       var avg = sum / this.cycleScores.length
 
-      this.currentWeights.score = sum / this.cycleScores.length;
+      this.currentWeights.score = (sum / this.cycleScores.length) - this.demerits;
       this.cycleScores = [];
+      this.demerits = 0;
+
+      // randomize any weights that score really low
+      if (this.currentWeights.score < (this.population.topScore() / 3)) {
+        console.log("low score " + this.currentWeights.score);
+        this.currentWeights.score = 0;
+        this.currentWeights.generateRandomWeights();
+      }
 
       // apply the next set of weights to the neural net
       this.currentWeights = this.population.getMember();
@@ -146,16 +156,11 @@ GameManager.prototype.startAI = function () {
     self.timeout_ai = null;
 
     // try moves in order until one causes action
-    // var moveIndex = 0,
-    //     potentialMoves = self.nn.getMove(self.grid.cells);
-    // while (!self.move(potentialMoves[moveIndex])) {
-    //   moveIndex++;
-    // }
-
-    // end the game if a useless move is made
-    var move = self.nn.getMove(self.grid.cells);
-    if (!$.isNumeric(move) || !self.move(move)) {
-      self.over = true;
+    var moveIndex = 0,
+        potentialMoves = self.nn.getMove(self.grid.cells);
+    while (!self.move(potentialMoves[moveIndex])) {
+      moveIndex++;
+      this.demerits++;
     }
 
     self.startAI();

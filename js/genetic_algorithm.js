@@ -58,6 +58,11 @@ Population.prototype.getMember = function() {
   return this.members[this.members.length - 1];
 }
 
+Population.prototype.topScore = function() {
+  this.sort();
+  return this.members[0].score;
+}
+
 Population.prototype.to_s = function() {
   var retval = "";
   for (var i = 0; i < this.members.length; i++) {
@@ -80,7 +85,7 @@ function Phenotype(weights, score) {
 }
 
 Phenotype.prototype.generateRandomWeights = function() {
-  length = 204;
+  length = 240;
   this.weights = "";
   while (length--) {
     this.weights += String.fromCharCode(Math.floor(Math.random() * 255));

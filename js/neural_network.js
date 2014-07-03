@@ -1,11 +1,10 @@
 function NN(board_size, phenotype) {
   this.boardSize = board_size;
 
-  var num_hidden = phenotype.weights.length / (Math.pow(board_size, 2) + 1)
+  var num_hidden = phenotype.weights.length / (Math.pow(board_size, 2) + 4);
 
-  this.inputs = [];
   this.hidden = new Layer(num_hidden, phenotype.weights.substr(0, Math.pow(board_size, 2) * num_hidden));
-  this.outputs = new Layer(1, phenotype.weights.substr(num_hidden * -1));
+  this.outputs = new Layer(4, phenotype.weights.substr(num_hidden * -4));
 }
 
 NN.prototype.cellsToInputs = function(cells) {
@@ -24,25 +23,23 @@ NN.prototype.cellsToInputs = function(cells) {
 }
 
 NN.prototype.getMove = function(cells) {
-  var moves = this.getOutputs(this.cellsToInputs(cells));
-  return Math.floor(moves[0] * 4);
-      // moveTuples = [];
+  var moves = this.getOutputs(this.cellsToInputs(cells)),
+      moveTuples = [];
 
   // sort the moves by output value
-  // for(var i = 0; i < moves.length; i++) {
-  //   moveTuples.push([[i], moves[i]])
-  // }
+  for(var i = 0; i < moves.length; i++) {
+    moveTuples.push([[i], moves[i]])
+  }
 
-  // return $.map(moveTuples.sort(function(a, b) {
-  //   a = a[1];
-  //   b = b[1];
+  var moves = $.map(moveTuples.sort(function(a, b) {
+    a = a[1];
+    b = b[1];
 
-  //   return a > b ? -1 : (a < b ? 1 : 0);
-  // }), function(tuple) {
-  //   return tuple[0];
-  // });
-
-  
+    return a > b ? -1 : (a < b ? 1 : 0);
+  }), function(tuple) {
+    return tuple[0];
+  });
+  return moves;
 }
 
 NN.prototype.getOutputs = function(input_vals) {
